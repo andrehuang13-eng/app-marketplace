@@ -8,7 +8,17 @@ import {
   getReviewsForApp,
   getSimilarApps,
 } from "@/lib/queries/apps";
+import {
+  getInstallByUserAndApp,
+  getMyReviewForApp,
+  isFavorited,
+} from "@/lib/queries/merchant";
 import { currentUser } from "@/lib/auth/dal";
+import {
+  installApp,
+  toggleFavorite,
+} from "@/lib/actions/merchant";
+import { ReviewForm } from "./ReviewForm";
 
 type Params = Promise<{ slug: string }>;
 
@@ -27,11 +37,21 @@ export default async function AppDetailPage({ params }: { params: Params }) {
   const app = await getAppBySlug(slug);
   if (!app) notFound();
 
-  const [reviewsData, similarApps, viewer] = await Promise.all([
-    getReviewsForApp(app.id, 1, 10),
-    getSimilarApps(app.id, app.category.id, 4),
-    currentUser(),
-  ]);
+  const viewer = await currentUser();
+  const [reviewsData, similarApps, viewerInstall, viewerFavorited, myReview] =
+    await Promise.all([
+      getReviewsForApp(app.id, 1, 10),
+      getSimilarApps(app.id, app.category.id, 4),
+      viewer && viewer.role === "MERCHANT"
+        ? getInstallByUserAndApp(viewer.id, app.id)
+        : Promise.resolve(null),
+      viewer && viewer.role === "MERCHANT"
+        ? isFavorited(viewer.id, app.id)
+        : Promise.resolve(false),
+      viewer && viewer.role === "MERCHANT"
+        ? getMyReviewForApp(viewer.id, app.id)
+        : Promise.resolve(null),
+    ]);
 
   const developerDetails = app.developer.developer;
 
@@ -90,8 +110,24 @@ export default async function AppDetailPage({ params }: { params: Params }) {
             <span aria-hidden>•</span>
             <span>v{app.currentVersion}</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <InstallCta viewerRole={viewer?.role ?? null} appSlug={app.slug} />
+          <div className="flex flex-wrap items-center gap-2">
+            <InstallCta
+              viewerRole={viewer?.role ?? null}
+              appId={app.id}
+              appSlug={app.slug}
+              installed={Boolean(viewerInstall)}
+            />
+            {viewer?.role === "MERCHANT" && (
+              <form action={toggleFavorite}>
+                <input type="hidden" name="appId" value={app.id} />
+                <button
+                  type="submit"
+                  className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+                >
+                  {viewerFavorited ? "♥ Favorited" : "♡ Favorite"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </header>
@@ -105,6 +141,18 @@ export default async function AppDetailPage({ params }: { params: Params }) {
               </ReactMarkdown>
             </div>
           </Section>
+
+          {viewer?.role === "MERCHANT" && viewerInstall && (
+            <Section title={myReview ? "Edit your review" : "Write a review"}>
+              <div id="review">
+                <ReviewForm
+                  appId={app.id}
+                  defaultRating={myReview?.rating ?? 5}
+                  defaultBody={myReview?.body ?? ""}
+                />
+              </div>
+            </Section>
+          )}
 
           <Section title={`Reviews (${reviewsData.total})`}>
             {reviewsData.total === 0 ? (
@@ -128,7 +176,7 @@ export default async function AppDetailPage({ params }: { params: Params }) {
                         <span className="font-medium text-zinc-900 dark:text-white">
                           {r.user.name}
                         </span>
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-amber-500">
                           {"★".repeat(r.rating)}
                           <span className="text-zinc-300 dark:text-zinc-700">
                             {"★".repeat(5 - r.rating)}
@@ -271,10 +319,14 @@ function RatingBreakdown({
 
 function InstallCta({
   viewerRole,
+  appId,
   appSlug,
+  installed,
 }: {
   viewerRole: "MERCHANT" | "DEVELOPER" | "ADMIN" | null;
+  appId: string;
   appSlug: string;
+  installed: boolean;
 }) {
   if (!viewerRole) {
     return (
@@ -287,15 +339,26 @@ function InstallCta({
     );
   }
   if (viewerRole === "MERCHANT") {
+    if (installed) {
+      return (
+        <Link
+          href="/merchant"
+          className="rounded-full border border-emerald-300 bg-emerald-50 px-5 py-2 text-sm font-medium text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-900"
+        >
+          ✓ Installed — open
+        </Link>
+      );
+    }
     return (
-      <button
-        type="button"
-        disabled
-        title="Install action available in the merchant dashboard (milestone 3)"
-        className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-zinc-900"
-      >
-        Install
-      </button>
+      <form action={installApp}>
+        <input type="hidden" name="appId" value={appId} />
+        <button
+          type="submit"
+          className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+        >
+          Install
+        </button>
+      </form>
     );
   }
   return null;
