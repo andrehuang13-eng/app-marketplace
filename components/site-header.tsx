@@ -26,6 +26,7 @@ export function SiteHeader({
       { href: "/admin/apps", label: "Apps" },
       { href: "/admin/categories", label: "Categories" },
       { href: "/admin/users", label: "Users" },
+      { href: "/admin/audit", label: "Audit" },
       { href: "/admin/settings", label: "Settings" },
     ],
   };
