@@ -75,12 +75,21 @@ const developerCtx = await signIn(developer.email);
 const adminCtx = await signIn(admin.email);
 
 async function settle(page) {
-  await page.evaluate(() =>
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }),
-  );
-  await new Promise((r) => setTimeout(r, 600));
+  // Scroll the entire page in steps so viewport-triggered animations fire.
+  // Framer Motion useInView with once: true persists once triggered.
+  const totalHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  let pos = 0;
+  while (pos < totalHeight) {
+    pos += Math.floor(viewportHeight * 0.6);
+    await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), pos);
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  // Give the last batch of animations time to complete.
+  await new Promise((r) => setTimeout(r, 1200));
+  // Return to the top for fullPage capture.
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 600));
 }
 
 async function shot({ ctx, slug, path, viewport }) {
