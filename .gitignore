@@ -41,3 +41,11 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# portfolio build artifacts (generated, not committed)
+screenshots/
+portfolio.html
+storestack-portfolio.pdf
+
+# local logs
+*.log
