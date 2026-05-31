@@ -1,0 +1,221 @@
+// Storestack marketplace schema
+// See docs/superpowers/plans/ for context.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Enums ---
+
+enum Role {
+  MERCHANT
+  DEVELOPER
+  ADMIN
+}
+
+enum UserStatus {
+  UNVERIFIED
+  ACTIVE
+  SUSPENDED
+}
+
+enum AppStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+}
+
+enum PricingModel {
+  FREE
+  FREEMIUM
+  PAID
+}
+
+enum InstallStatus {
+  ACTIVE
+  NEEDS_CONFIG
+  ERROR
+}
+
+enum AuditDecision {
+  APPROVE
+  REJECT
+}
+
+// --- Models ---
+
+model User {
+  id              String     @id @default(cuid())
+  email           String     @unique
+  passwordHash    String
+  name            String
+  role            Role
+  status          UserStatus @default(UNVERIFIED)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime   @default(now())
+
+  developer    Developer?
+  installs     Install[]
+  favorites    Favorite[]
+  reviews      Review[]
+  appsOwned    App[]                    @relation("DeveloperApps")
+  auditActions AuditLog[]               @relation("Actor")
+  emailTokens  EmailVerificationToken[]
+  resetTokens  PasswordResetToken[]
+
+  @@index([email])
+}
+
+model Developer {
+  userId       String  @id
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName  String
+  logoUrl      String?
+  bio          String?
+  supportEmail String
+}
+
+model Category {
+  id        String @id @default(cuid())
+  slug      String @unique
+  name      String
+  sortOrder Int    @default(0)
+  apps      App[]
+}
+
+model App {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  name           String
+  tagline        String
+  descriptionMd  String       @db.Text
+  iconUrl        String?
+  pricingModel   PricingModel
+  currentVersion String       @default("1.0.0")
+  developerId    String
+  developer      User         @relation("DeveloperApps", fields: [developerId], references: [id])
+  categoryId     String
+  category       Category     @relation(fields: [categoryId], references: [id])
+  status         AppStatus    @default(DRAFT)
+  featured       Boolean      @default(false)
+  publishedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  screenshots    AppScreenshot[]
+  versions       AppVersion[]
+  installs       Install[]
+  favorites      Favorite[]
+  reviews        Review[]
+  reviewComments ReviewQueueComment[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([featured])
+}
+
+model AppScreenshot {
+  id        String  @id @default(cuid())
+  appId     String
+  app       App     @relation(fields: [appId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+  caption   String?
+}
+
+model AppVersion {
+  id          String   @id @default(cuid())
+  appId       String
+  app         App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  version     String
+  changelog   String   @db.Text
+  publishedAt DateTime @default(now())
+}
+
+model Install {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appId        String
+  app          App           @relation(fields: [appId], references: [id], onDelete: Cascade)
+  installedAt  DateTime      @default(now())
+  configJson   Json?
+  configStatus InstallStatus @default(NEEDS_CONFIG)
+
+  @@unique([userId, appId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appId     String
+  app       App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, appId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appId     String
+  app       App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  rating    Int
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, appId])
+}
+
+model ReviewQueueComment {
+  id        String        @id @default(cuid())
+  appId     String
+  app       App           @relation(fields: [appId], references: [id], onDelete: Cascade)
+  adminId   String
+  decision  AuditDecision
+  comment   String        @db.Text
+  createdAt DateTime      @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String
+  actor        User     @relation("Actor", fields: [actorId], references: [id])
+  action       String
+  targetType   String
+  targetId     String
+  metadataJson Json?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+}
+
+model Setting {
+  key       String @id
+  valueJson Json
+}
