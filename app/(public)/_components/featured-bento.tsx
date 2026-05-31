@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { TiltCard } from "@/components/tilt-card";
+import { Stagger, StaggerItem } from "@/components/motion";
 import type { AppCardView } from "@/lib/queries/apps";
 
 const PALETTE: { id: string; gradient: string; accent: string }[] = [
-  { id: "violet", gradient: "from-violet-500/30 via-fuchsia-500/15 to-transparent", accent: "text-violet-300" },
-  { id: "cyan", gradient: "from-cyan-400/30 via-sky-500/15 to-transparent", accent: "text-cyan-300" },
-  { id: "emerald", gradient: "from-emerald-400/30 via-teal-500/15 to-transparent", accent: "text-emerald-300" },
-  { id: "amber", gradient: "from-amber-400/30 via-orange-500/15 to-transparent", accent: "text-amber-300" },
-  { id: "rose", gradient: "from-rose-400/30 via-pink-500/15 to-transparent", accent: "text-rose-300" },
-  { id: "fuchsia", gradient: "from-fuchsia-400/30 via-purple-500/15 to-transparent", accent: "text-fuchsia-300" },
+  { id: "magenta", gradient: "from-pink-500/35 via-fuchsia-500/15 to-transparent", accent: "text-pink-300" },
+  { id: "indigo", gradient: "from-indigo-500/35 via-violet-500/15 to-transparent", accent: "text-indigo-300" },
+  { id: "cyan", gradient: "from-cyan-400/35 via-sky-500/15 to-transparent", accent: "text-cyan-300" },
+  { id: "lime", gradient: "from-lime-400/35 via-emerald-500/15 to-transparent", accent: "text-lime-300" },
+  { id: "amber", gradient: "from-amber-400/35 via-orange-500/15 to-transparent", accent: "text-amber-300" },
+  { id: "rose", gradient: "from-rose-400/35 via-pink-500/15 to-transparent", accent: "text-rose-300" },
 ];
 
 export function FeaturedBento({ apps }: { apps: AppCardView[] }) {
@@ -19,12 +20,16 @@ export function FeaturedBento({ apps }: { apps: AppCardView[] }) {
   const rest = apps.slice(1, 6);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
-      <HeroCell app={hero} palette={PALETTE[0]} />
+    <Stagger className="grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
+      <StaggerItem className="h-full lg:col-span-1 lg:row-span-2">
+        <HeroCell app={hero} palette={PALETTE[0]} />
+      </StaggerItem>
       {rest.map((app, i) => (
-        <Cell key={app.id} app={app} palette={PALETTE[(i + 1) % PALETTE.length]} />
+        <StaggerItem key={app.id} className="h-full">
+          <Cell app={app} palette={PALETTE[(i + 1) % PALETTE.length]} />
+        </StaggerItem>
       ))}
-    </div>
+    </Stagger>
   );
 }
 

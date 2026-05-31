@@ -33,9 +33,9 @@ export function SiteHeader({
 
   const accent =
     area === "merchant"
-      ? "bg-gradient-to-br from-cyan-400 to-emerald-400"
+      ? "bg-gradient-to-br from-cyan-400 to-lime-400"
       : area === "developer"
-        ? "bg-gradient-to-br from-violet-500 to-fuchsia-500"
+        ? "bg-gradient-to-br from-pink-500 to-indigo-500"
         : "bg-gradient-to-br from-amber-400 to-rose-500";
 
   return (

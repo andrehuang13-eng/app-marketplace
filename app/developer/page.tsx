@@ -2,7 +2,11 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/dal";
 import { getMyApps } from "@/lib/queries/developer";
 import { AppIcon, PricingBadge } from "@/components/app-card";
+import { db } from "@/lib/db";
+import { DashboardStats } from "@/components/dashboard-stats";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { deleteDraft } from "@/lib/actions/developer";
+import { PrimaryButton } from "@/components/primary-button";
 
 export const metadata = { title: "My apps" };
 
@@ -15,94 +19,102 @@ export default async function DeveloperAppsPage({
 }) {
   const user = await requireRole("DEVELOPER");
   const params = await searchParams;
-  const apps = await getMyApps(user.id);
+  const [apps, totalInstalls, totalReviews] = await Promise.all([
+    getMyApps(user.id),
+    db.install.count({ where: { app: { developerId: user.id } } }),
+    db.review.count({ where: { app: { developerId: user.id } } }),
+  ]);
+  const publishedCount = apps.filter((a) => a.status === "PUBLISHED").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {params.submitted && (
-        <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-          Submitted for review. The Storestack team will review it shortly.
-        </p>
+        <div className="glass rounded-2xl border border-lime-400/20 bg-lime-400/[0.06] px-4 py-3 text-sm text-lime-300">
+          <span className="font-mono text-[10px] uppercase tracking-widest">/ submitted ·</span>{" "}
+          The Storestack team will review it shortly.
+        </div>
       )}
 
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            My apps
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {apps.length} {apps.length === 1 ? "app" : "apps"}
-          </p>
+      <Reveal>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500">
+              / developer · {user.name}
+            </p>
+            <h1 className="font-display text-4xl text-zinc-50 sm:text-5xl">
+              My apps.
+            </h1>
+          </div>
+          <PrimaryButton href="/developer/submit">Submit new app</PrimaryButton>
         </div>
-        <Link
-          href="/developer/submit"
-          className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Submit new app
-        </Link>
-      </div>
+      </Reveal>
+
+      <DashboardStats
+        stats={[
+          { label: "Published", value: publishedCount, accent: "lime" },
+          { label: "Total installs", value: totalInstalls, accent: "magenta" },
+          { label: "Reviews on my apps", value: totalReviews, accent: "indigo" },
+        ]}
+      />
 
       {apps.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="glass rounded-2xl p-12 text-center">
+          <p className="text-sm text-zinc-400">
             You haven't submitted any apps yet.
           </p>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <Stagger className="space-y-3">
           {apps.map((app) => (
-            <li
-              key={app.id}
-              className="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-            >
-              <AppIcon name={app.name} url={app.iconUrl} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-white">
-                    {app.name}
+            <StaggerItem key={app.id}>
+              <div className="edge-glow glass relative flex items-start gap-4 overflow-hidden rounded-2xl p-4 pl-5 transition hover:bg-white/[0.02]">
+                <AppIcon name={app.name} url={app.iconUrl} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-zinc-50">
+                      {app.name}
+                    </p>
+                    <PricingBadge pricing={app.pricingModel} />
+                    <StatusBadge status={app.status} />
+                  </div>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+                    {app.category.name} · {app._count.installs.toLocaleString()} installs · {app._count.reviews} reviews
                   </p>
-                  <PricingBadge pricing={app.pricingModel} />
-                  <StatusBadge status={app.status} />
+                  <p className="mt-2 line-clamp-2 text-sm text-zinc-400">
+                    {app.tagline}
+                  </p>
                 </div>
-                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                  {app.category.name} ·{" "}
-                  {app._count.installs.toLocaleString()} installs ·{" "}
-                  {app._count.reviews} reviews
-                </p>
-                <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {app.tagline}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <Link
-                  href={`/developer/submit?edit=${app.id}`}
-                  className="rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-                >
-                  Edit
-                </Link>
-                {app.status === "PUBLISHED" && (
+                <div className="flex flex-col items-end gap-2">
                   <Link
-                    href={`/apps/${app.slug}`}
-                    className="text-xs font-medium text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
+                    href={`/developer/submit?edit=${app.id}`}
+                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-100 backdrop-blur transition hover:border-white/30 hover:bg-white/10"
                   >
-                    View public
+                    Edit
                   </Link>
-                )}
-                {(app.status === "DRAFT" || app.status === "REJECTED") && (
-                  <form action={deleteDraft}>
-                    <input type="hidden" name="appId" value={app.id} />
-                    <button
-                      type="submit"
-                      className="text-xs font-medium text-zinc-500 transition hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400"
+                  {app.status === "PUBLISHED" && (
+                    <Link
+                      href={`/apps/${app.slug}`}
+                      className="text-xs font-medium text-zinc-500 underline-offset-4 hover:text-zinc-200 hover:underline"
                     >
-                      Delete
-                    </button>
-                  </form>
-                )}
+                      View public
+                    </Link>
+                  )}
+                  {(app.status === "DRAFT" || app.status === "REJECTED") && (
+                    <form action={deleteDraft}>
+                      <input type="hidden" name="appId" value={app.id} />
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-zinc-500 transition hover:text-rose-400"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  )}
+                </div>
               </div>
-            </li>
+            </StaggerItem>
           ))}
-        </ul>
+        </Stagger>
       )}
     </div>
   );
@@ -114,15 +126,15 @@ function StatusBadge({
   status: "DRAFT" | "IN_REVIEW" | "APPROVED" | "REJECTED" | "PUBLISHED";
 }) {
   const map = {
-    DRAFT: { text: "Draft", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" },
-    IN_REVIEW: { text: "In review", className: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300" },
-    APPROVED: { text: "Approved", className: "bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300" },
-    REJECTED: { text: "Rejected", className: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300" },
-    PUBLISHED: { text: "Published", className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" },
+    DRAFT: { text: "Draft", className: "border-white/20 bg-white/5 text-zinc-300" },
+    IN_REVIEW: { text: "In review", className: "border-amber-400/30 bg-amber-400/10 text-amber-300" },
+    APPROVED: { text: "Approved", className: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300" },
+    REJECTED: { text: "Rejected", className: "border-rose-400/30 bg-rose-400/10 text-rose-300" },
+    PUBLISHED: { text: "Published", className: "border-lime-400/30 bg-lime-400/10 text-lime-300" },
   } as const;
   const v = map[status];
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${v.className}`}>
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest ${v.className}`}>
       {v.text}
     </span>
   );

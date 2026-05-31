@@ -5,12 +5,12 @@ import { TiltCard } from "@/components/tilt-card";
 import type { AppCardView } from "@/lib/queries/apps";
 
 const PALETTE = [
-  "from-violet-500/25 via-fuchsia-500/10 to-transparent",
+  "from-pink-500/25 via-fuchsia-500/10 to-transparent",
+  "from-indigo-500/25 via-violet-500/10 to-transparent",
   "from-cyan-400/25 via-sky-500/10 to-transparent",
-  "from-emerald-400/25 via-teal-500/10 to-transparent",
+  "from-lime-400/25 via-emerald-500/10 to-transparent",
   "from-amber-400/25 via-orange-500/10 to-transparent",
   "from-rose-400/25 via-pink-500/10 to-transparent",
-  "from-fuchsia-400/25 via-purple-500/10 to-transparent",
 ];
 
 function gradientForName(name: string): string {
@@ -64,14 +64,14 @@ export function AppCard({ app }: { app: AppCardView }) {
 }
 
 const ICON_PALETTE = [
-  "from-violet-500 to-fuchsia-500",
+  "from-pink-500 to-fuchsia-500",
+  "from-indigo-500 to-violet-500",
   "from-cyan-400 to-sky-500",
-  "from-emerald-400 to-teal-500",
+  "from-lime-400 to-emerald-500",
   "from-amber-400 to-orange-500",
   "from-rose-400 to-pink-500",
-  "from-fuchsia-400 to-purple-500",
-  "from-blue-400 to-violet-500",
-  "from-orange-400 to-rose-500",
+  "from-violet-500 to-indigo-500",
+  "from-fuchsia-500 to-cyan-500",
 ];
 
 export function AppIcon({

@@ -24,7 +24,7 @@ export async function PublicHeader() {
             aria-hidden
             className="relative inline-flex h-6 w-6 items-center justify-center"
           >
-            <span className="absolute inset-0 rounded-md bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 opacity-90 blur-[2px] transition group-hover:opacity-100" />
+            <span className="absolute inset-0 rounded-md bg-gradient-to-br from-pink-500 via-indigo-500 to-cyan-400 opacity-90 blur-[2px] transition group-hover:opacity-100" />
             <span className="absolute inset-[2px] rounded-[5px] bg-zinc-950" />
             <span className="relative text-[10px] font-bold text-white">S</span>
           </span>
