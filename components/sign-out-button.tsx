@@ -13,7 +13,7 @@ export function SignOutButton({
         type="submit"
         className={
           className ??
-          "rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+          "rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-medium text-zinc-300 backdrop-blur transition hover:border-white/30 hover:bg-white/10 hover:text-zinc-50"
         }
       >
         {label}

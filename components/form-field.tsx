@@ -27,7 +27,7 @@ export function Field({
     <div>
       <label
         htmlFor={name}
-        className="block text-sm font-medium text-zinc-900 dark:text-zinc-100"
+        className="block text-xs font-medium uppercase tracking-widest text-zinc-400"
       >
         {label}
       </label>
@@ -40,13 +40,13 @@ export function Field({
         defaultValue={defaultValue}
         aria-invalid={hasError ? true : undefined}
         aria-describedby={errorId}
-        className="mt-1 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-white"
+        className="mt-1.5 block w-full rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 backdrop-blur transition focus:border-violet-400/60 focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-violet-400/20"
       />
       {hint && !hasError && (
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>
+        <p className="mt-1.5 text-xs text-zinc-500">{hint}</p>
       )}
       {hasError && (
-        <p id={errorId} className="mt-1 text-xs text-red-600 dark:text-red-400">
+        <p id={errorId} className="mt-1.5 text-xs text-rose-400">
           {errors!.join(", ")}
         </p>
       )}
@@ -67,7 +67,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+      className="w-full rounded-full bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-950 shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_8px_24px_-8px_rgba(139,92,246,0.5),0_0_40px_-10px_rgba(34,211,238,0.4)] transition-all duration-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? pendingLabel ?? "Working…" : children}
     </button>
@@ -84,8 +84,8 @@ export function FormMessage({
   if (!message) return null;
   const className =
     tone === "success"
-      ? "rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-      : "rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300";
+      ? "rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-300"
+      : "rounded-xl border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-300";
   return (
     <p className={className} role={tone === "error" ? "alert" : undefined}>
       {message}

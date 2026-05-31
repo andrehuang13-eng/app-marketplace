@@ -1,26 +1,253 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-instrument-serif), Georgia, serif;
+
+  --color-bg-base: #07070a;
+  --color-bg-elevated: #0d0d12;
+  --color-surface: rgba(20, 20, 28, 0.6);
+  --color-surface-strong: rgba(30, 30, 40, 0.9);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+
+  --color-ink: #f4f4f5;
+  --color-ink-muted: #a1a1aa;
+  --color-ink-dim: #71717a;
+
+  --color-violet: #8b5cf6;
+  --color-cyan: #22d3ee;
+  --color-fuchsia: #d946ef;
+  --color-emerald: #10b981;
+  --color-amber: #f59e0b;
+  --color-rose: #f43f5e;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-bg-base);
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-base);
+  color: var(--color-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display serif used for big headlines (Apple/Linear blog-style). */
+.font-display {
+  font-family: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+/* Glass surface — frosted card. */
+.glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+.glass-strong {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border: 1px solid var(--color-border-strong);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* Animated aurora mesh used in the hero. */
+.aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  animation: drift 22s ease-in-out infinite;
+  will-change: transform;
+}
+.aurora::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(closest-side, #8b5cf6, transparent);
+  top: -200px;
+  left: -120px;
+}
+.aurora::after {
+  width: 720px;
+  height: 720px;
+  background: radial-gradient(closest-side, #22d3ee, transparent);
+  bottom: -260px;
+  right: -160px;
+  animation-delay: -10s;
+  opacity: 0.4;
+}
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(40px, -30px, 0) scale(1.05); }
+  66%      { transform: translate3d(-30px, 20px, 0) scale(0.96); }
+}
+
+/* Subtle dot grid background. */
+.dot-grid {
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+}
+
+/* Gradient text. */
+.text-grad-cool {
+  background: linear-gradient(120deg, #8b5cf6 0%, #22d3ee 60%, #10b981 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-grad-warm {
+  background: linear-gradient(120deg, #f43f5e 0%, #f59e0b 50%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Animated underline on links. */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* Glow ring used on focused or featured CTAs. */
+.glow-ring {
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.35),
+    0 8px 24px -8px rgba(139, 92, 246, 0.5),
+    0 0 40px -10px rgba(34, 211, 238, 0.4);
+}
+
+/* Card gradient borders that show on hover. */
+.gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 30%, rgba(139, 92, 246, 0.6), rgba(34, 211, 238, 0.6) 70%, transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+  pointer-events: none;
+}
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* Disable default focus rings in favor of glow. */
+*:focus-visible {
+  outline: 2px solid rgba(139, 92, 246, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Marquee scrolling text. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+/* prose tweaks for app description on dark glass. */
+.prose-storestack {
+  color: var(--color-ink-muted);
+  line-height: 1.7;
+}
+.prose-storestack h1,
+.prose-storestack h2,
+.prose-storestack h3 {
+  color: var(--color-ink);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+.prose-storestack h2 { font-size: 1.25rem; }
+.prose-storestack h3 { font-size: 1.05rem; }
+.prose-storestack p { margin: 0 0 1em; }
+.prose-storestack ul {
+  list-style: none;
+  padding: 0;
+}
+.prose-storestack ul li {
+  position: relative;
+  padding-left: 1.3em;
+  margin: 0.4em 0;
+}
+.prose-storestack ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.1em;
+  top: 0.7em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-violet), var(--color-cyan));
+}
+.prose-storestack strong { color: var(--color-ink); }
+.prose-storestack a {
+  color: var(--color-cyan);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.3);
+}
+.prose-storestack code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
 }

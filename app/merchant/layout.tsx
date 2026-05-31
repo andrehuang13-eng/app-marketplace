@@ -5,9 +5,10 @@ import { SiteHeader } from "@/components/site-header";
 export default async function MerchantLayout({ children }: { children: ReactNode }) {
   const user = await requireRole("MERCHANT");
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="relative min-h-screen bg-[#07070a] text-zinc-100">
+      <div aria-hidden className="dot-grid pointer-events-none fixed inset-0 opacity-30" />
       <SiteHeader user={user} area="merchant" />
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main className="relative mx-auto max-w-6xl px-6 py-10">{children}</main>
     </div>
   );
 }

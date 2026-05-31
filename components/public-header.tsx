@@ -14,30 +14,44 @@ export async function PublicHeader() {
           : null;
 
   return (
-    <header className="border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-black/40 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3">
-        <div className="flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white"
+        <Link
+          href="/"
+          className="group flex items-center gap-2 text-base font-semibold tracking-tight"
+        >
+          <span
+            aria-hidden
+            className="relative inline-flex h-6 w-6 items-center justify-center"
           >
-            Storestack
-          </Link>
-          <nav className="hidden gap-4 text-sm text-zinc-600 sm:flex dark:text-zinc-400">
-            <Link href="/apps" className="transition hover:text-zinc-900 dark:hover:text-white">
-              Browse
+            <span className="absolute inset-0 rounded-md bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 opacity-90 blur-[2px] transition group-hover:opacity-100" />
+            <span className="absolute inset-[2px] rounded-[5px] bg-zinc-950" />
+            <span className="relative text-[10px] font-bold text-white">S</span>
+          </span>
+          <span className="text-zinc-50">Storestack</span>
+        </Link>
+
+        <nav className="hidden gap-1 text-sm sm:flex">
+          {[
+            ["/apps", "Browse"],
+            ["/search", "Search"],
+          ].map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="rounded-full px-3 py-1.5 text-zinc-400 transition hover:bg-white/5 hover:text-zinc-50"
+            >
+              {label}
             </Link>
-            <Link href="/search" className="transition hover:text-zinc-900 dark:hover:text-white">
-              Search
-            </Link>
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
           {dashboardHref ? (
             <>
               <Link
                 href={dashboardHref}
-                className="rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-full bg-zinc-50 px-4 py-1.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
               >
                 Dashboard
               </Link>
@@ -47,13 +61,13 @@ export async function PublicHeader() {
             <>
               <Link
                 href="/sign-in"
-                className="hidden text-sm font-medium text-zinc-700 transition hover:text-zinc-900 sm:inline dark:text-zinc-300 dark:hover:text-white"
+                className="hidden rounded-full px-3 py-1.5 text-sm font-medium text-zinc-400 transition hover:text-zinc-50 sm:inline"
               >
                 Sign in
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-full bg-zinc-50 px-4 py-1.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
               >
                 Sign up
               </Link>
